@@ -20,7 +20,7 @@ class Juego:
         pygame.display.set_caption("Sprites")
         self.fondo = pygame.image.load("./images/background.jpg").convert()
         self.fondo = pygame.transform.scale(self.fondo, (WIDTH, HEIGHT))
-        self.fuente = pygame.font.Font("freesansbold", 48)
+        self.fuente = pygame.font.Font("FreeSansBold.ttf", 48)
 
         self.sprites = pygame.sprite.Group()
         self.asteroides = pygame.sprite.Group()
@@ -91,6 +91,9 @@ class Juego:
                 asteroide.kill()
             lista = pygame.sprite.spritecollide(self.nave, self.asteroides, True)
 
+            if len(lista) > 0 :
+                self.finalizado = True
+
         for laser in self.lasers:               # esto tambien lo podria poner en un metodo
             if laser.rect.top <= 0:
                 laser.kill()
@@ -132,6 +135,8 @@ class Juego:
         self.screen.blit(texto, rect_texto)
 
         pygame.display.flip()
+        pygame.time.wait(5000)
+
 
 juego = Juego()
 juego.comenzar()
