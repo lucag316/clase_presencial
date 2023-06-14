@@ -25,8 +25,15 @@ class Juego:
 
         self.nave = Nave("./images/nave.png", SIZE_SHIP, (self.screen.get_width() // 2, self.screen.get_height() - 20))
     
-    def agregar_sprite(self, sprite): # sprite nuestro no de pygame
+    def agregar_sprite(self, sprite): # sprite nuestro, no de pygame
         self.sprites.add(sprite)
+    
+    def agregar_asteroide(self, asteroide):
+        self.asteroides.add(asteroide)
+
+    def agregar_laser(self, laser):
+        self.lasers.add(laser)
+
 
     def comenzar(self):    # start
         self.jugando = True
@@ -40,9 +47,7 @@ class Juego:
 
             self.renderizar_pantalla()
 
-            self.terminar_partida()
 
-    
     def manejar_eventos(self):
         for evento in pygame.event.get():
             if evento.type == pygame.QUIT:
@@ -52,14 +57,16 @@ class Juego:
                 if evento.key == pygame.K_LEFT:
                     self.nave.velocidad_x = -SPEED_SHIP
                     print(self.nave.velocidad_x)
-                if evento.key == pygame.K_RIGHT:
+                elif evento.key == pygame.K_RIGHT:
                     self.nave.velocidad_x = SPEED_SHIP
-                if evento.key == pygame.K_UP:
+                elif evento.key == pygame.K_UP:
                     self.nave.velocidad_y = -SPEED_SHIP
-                if evento.key == pygame.K_DOWN:
+                elif evento.key == pygame.K_DOWN:
                     self.nave.velocidad_y = SPEED_SHIP
-                if evento.key == pygame.K_SPACE:
-                    self.nave.disparar(self.sonido, SPEED_LASER, self.sprites, self.lasers) 
+                elif evento.key == pygame.K_SPACE:
+                    self.nave.disparar(self.sonido, SPEED_LASER, self.sprites, self.lasers)
+                elif evento.key == pygame.K_ESCAPE:
+                    self.terminar_partida()     # podria poner self.jugando = False, pero es mejor asi con el metodo
                 
             elif evento.type == pygame.KEYUP:
                 if evento.key == pygame.K_LEFT:
@@ -72,18 +79,33 @@ class Juego:
                     self.nave.velocidad_y = 0
 
 
-    def salir(self):    # cerrar la ventana
-        pygame.quit()
-        sys.exit()
 
-    def terminar_partida(self):
-        self.jugando = False
 
     def actualizar_elementos(self):     # update
-        pass
+        self.generar_asteroides(MAX_ASTEROIDES)
+        self.sprites.update()
+
+
 
     def renderizar_pantalla(self):      # draw
         pass
 
-# podria poner un self.configuracion para poder modificar las cosas en el juego
+    def salir(self):    # cerrar la ventana
+        pygame.quit()
+        sys.exit()
+    
+    def terminar_partida(self):
+        self.jugando = False
 
+    def generar_asteroides(self, cantidad):
+        if len(self.asteroides) == 0:
+            for i in range(cantidad):
+                posicion = (random.randrange(20, WIDTH - 20),
+                            random.randrange(-500, HEIGHT // 2))
+                asteroide = Asteroide("./images/asteroide.png", SIZE_ASTERIOD, posicion, SPEED_ASTEROIDE)
+
+                self.agregar_asteroide(asteroide)
+                self.agregar_sprite(asteroide)
+
+
+# podria poner un self.configuracion para poder modificar las cosas en el juego
