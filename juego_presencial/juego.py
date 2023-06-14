@@ -5,19 +5,22 @@ import random
 from config import *
 from nave import Nave
 from asteroide import Asteroide
+from laser import Laser
 
 class Juego:
     def __init__(self) -> None:
-        self.pygame.init()
+        pygame.init()
         self.reloj = pygame.time.Clock()
-        self.sonido = pygame.mixer.Sound("./sounds/laser.mp3")    #recibir todos los path por parametro
-        self.sonidos = []
+        self.sonido = pygame.mixer.Sound("./sounds/laser.mp3")    # recibir todos los path por parametro
+        # self.sonidos = []
         self.score = 0
-        self.jugando = True # running
+        self.jugando = False # running
+        self.finalizado = True
         self.screen = pygame.display.set_mode((WIDTH, HEIGHT))
         pygame.display.set_caption("Sprites")
         self.fondo = pygame.image.load("./images/background.jpg").convert()
         self.fondo = pygame.transform.scale(self.fondo, (WIDTH, HEIGHT))
+        self.fuente = pygame.font.Font("freesansbold", 48)
 
         self.sprites = pygame.sprite.Group()
         self.asteroides = pygame.sprite.Group()
@@ -69,26 +72,36 @@ class Juego:
                     self.terminar_partida()     # podria poner self.jugando = False, pero es mejor asi con el metodo
                 
             elif evento.type == pygame.KEYUP:
-                if evento.key == pygame.K_LEFT:
+                if evento.key == pygame.K_LEFT and self.nave.velocidad_x < 0:
                     self.nave.velocidad_x = 0
-                elif evento.key == pygame.K_RIGHT:
+                elif evento.key == pygame.K_RIGHT and self.nave.velocidad_x > 0:
                     self.nave.velocidad_x = 0
-                elif evento.key == pygame.K_UP:
+                elif evento.key == pygame.K_UP and self.nave.velocidad_y < 0:
                     self.nave.velocidad_y = 0
-                elif evento.key == pygame.K_DOWN:
+                elif evento.key == pygame.K_DOWN and self.nave.velocidad_y > 0:
                     self.nave.velocidad_y = 0
-
-
 
 
     def actualizar_elementos(self):     # update
         self.generar_asteroides(MAX_ASTEROIDES)
         self.sprites.update()
 
+        for asteroide in self.asteroides:       # controlar colision nave asteroide, podria ponerlo en un metodo
+            if asteroide.rect.bottom >= HEIGHT:
+                asteroide.kill()
+            lista = pygame.sprite.spritecollide(self.nave, self.asteroides, True)
 
+        for laser in self.lasers:               # esto tambien lo podria poner en un metodo
+            if laser.rect.top <= 0:
+                laser.kill()
+            lista = pygame.sprite.spritecollide(laser, self.asteroides, True) # identado
+            if len(lista):
+                laser.kill()
 
     def renderizar_pantalla(self):      # draw
-        pass
+        self.screen.blit(self.fondo, ORIGIN)
+        self.sprites.draw(self.screen)
+        pygame.display.flip()
 
     def salir(self):    # cerrar la ventana
         pygame.quit()
@@ -106,6 +119,22 @@ class Juego:
 
                 self.agregar_asteroide(asteroide)
                 self.agregar_sprite(asteroide)
+
+    def game_over(self):
+        self.finalizado = True
+        self.mostrar_pantalla_fin()
+    
+    def mostrar_pantalla_fin(self):
+        texto = self.fuente.render("GAME OVER", True, (0, 0, 255))
+        rect_texto = texto.get_rect()
+        rect_texto.center = (WIDTH // 2, HEIGHT // 2)
+        self.screen.fill((0, 0, 0))   # poner una pantalla para cuando termina la partida
+        self.screen.blit(texto, rect_texto)
+
+        pygame.display.flip()
+
+juego = Juego()
+juego.comenzar()
 
 
 # podria poner un self.configuracion para poder modificar las cosas en el juego
